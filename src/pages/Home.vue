@@ -583,7 +583,7 @@
     left: 0;
   }
 
-  #banner{height:125px;background:url('../assets/img/banner.png') no-repeat center top;background-size:100% 100%;}
-  .start{width:180px;height:50px;margin-top:25px;display:inline-block;background:url('../assets/img/start_btn2.png') no-repeat center center;background-size:84%;}
+  #banner{height:125px;background-image:url('../assets/img/banner.png'); background-position:center top; background-repeat: no-repeat; background-size:100% 100%;}
+  .start{width:180px;height:50px;margin-top:25px;display:inline-block;background-image:url('../assets/img/start_btn2.png'); background-position:center center; background-repeat: no-repeat; background-size:84%;}
   .start.active{background:url('../assets/img/start_btn.png') no-repeat center center;background-size:84%;}
 </style>
