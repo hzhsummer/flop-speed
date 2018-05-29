@@ -1,6 +1,6 @@
-# version-for-vue
+# Flop Speed
 
-> A Vue.js project
+> 翻牌拼手速，基于NAS公链
 
 ## Build Setup
 
