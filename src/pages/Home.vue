@@ -66,28 +66,6 @@
 </div>
 </template>
 
-<style lang="css">
-  @import '../assets/css/style';
-  .logo-box{
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    font-size: 24px;
-  }
-  .logo-box img{
-    width: 50px;
-    vertical-align: middle;
-    margin-top: -5px;
-  }
-  .copyright{
-    position: fixed;
-    bottom: 10px;
-    width: 100%;
-    text-align: center;
-    left: 0;
-  }
-</style>
-
 <script>
 
   import Nebulas from 'nebulas'
@@ -583,3 +561,29 @@
       }
 	}
 </script>
+
+<style lang="css">
+  @import '../assets/css/style';
+  .logo-box{
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    font-size: 24px;
+  }
+  .logo-box img{
+    width: 50px;
+    vertical-align: middle;
+    margin-top: -5px;
+  }
+  .copyright{
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    left: 0;
+  }
+
+  #banner{height:125px;background:url('../assets/img/banner.png') no-repeat center top;background-size:100% 100%;}
+  .start{width:180px;height:50px;margin-top:25px;display:inline-block;background:url('../assets/img/start_btn2.png') no-repeat center center;background-size:84%;}
+  .start.active{background:url('../assets/img/start_btn.png') no-repeat center center;background-size:84%;}
+</style>
