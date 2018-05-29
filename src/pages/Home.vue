@@ -45,7 +45,7 @@
   </div>
   <!--排名-->
   <el-dialog title="链上排行榜" :visible.sync="dialogRankingVisible">
-    <el-table :data="gridData">
+    <el-table :data="leaderBoard">
         <el-table-column type="index" label="排名" width="60">
         </el-table-column>
         <el-table-column property="nickname" label="玩家昵称" width="120"></el-table-column>
@@ -61,7 +61,7 @@
 
   <!--版权-->
   <div class="copyright">
-    注意：请安装 <a href="https://github.com/ChengOrangeJu/WebExtensionWallet" target="_blank">WebExtensionWallet</a> 官方钱包插件后畅玩NAS翻牌拼手速游戏
+    温馨提示! 本站部分操作需要星云钱包插件支持！插件安装请移步至 <a href="https://github.com/ChengOrangeJu/WebExtensionWallet" target="_blank">WebExtensionWallet</a>
   </div>
 </div>
 </template>
@@ -95,12 +95,15 @@
   import _ from 'lodash'
 
   var Neb = Nebulas.Neb
-  var neb = new Neb(new Nebulas.HttpRequest('https://testnet.nebulas.io'))
-  // var neb = new Neb(new Nebulas.HttpRequest('https://mainnet.nebulas.io'))
+  // var neb = new Neb(new Nebulas.HttpRequest('https://testnet.nebulas.io'))
+  var neb = new Neb(new Nebulas.HttpRequest('https://mainnet.nebulas.io'))
   var api = neb.api
 
   // 合约地址 test
-  const dappAddress = 'n1mD4U6AsNCQ5TDDnv9uzvmbRKBtgHg7yio'
+  // const dappAddress = 'n22TrSK9W4sJBJbvMCysNDTtnSon1orwN9u'
+
+  // 合约地址 main
+  const dappAddress = 'n1y8WT7P6fbw6GTZW4Rpi7n2V2FE48EUXAi'
 
 
   // 显示提示框
@@ -167,27 +170,21 @@
           cardSelectedArr: [], // 临时存放当前点击的卡牌信息
           cardSelectedNum: 0, // 存放已点卡牌的数量
           ruleContent: '', // 活动规则
-
+          leaderBoard: [],  // 排行榜数据
           dialogRankingVisible: false,
           nickName: '', // 用户昵称
           userAddress: localStorage.getItem('userAddress') ? localStorage.getItem('userAddress') : 'n1cF2MYqf9Uxd7K68SpqDdc79wxg69JDkje', // 玩家地址
-          blockchainTime: 0, // 链上已存在时间
-          gridData: [{
-            nickname: 'Tim',
-            address: 'n1sbRguE7eZHLfXCCC1RjNMtfv3fjn1DbSy',
-            time: 12
-          }, {
-            nickname: 'Tim',
-            address: 'n1sbRguE7eZHLfXCCC1RjNMtfv3fjn1DbSy',
-            time: 12
-          }, {
-            nickname: 'Tim',
-            address: 'n1sbRguE7eZHLfXCCC1RjNMtfv3fjn1DbSy',
-            time: 12
-          }]
+          blockchainTime: 0 // 链上已存在时间
         }
       },
       mounted() {
+          if (typeof (webExtensionWallet) === "undefined") {
+              this.$message({
+                message: '请先安装星云钱包插件哦',
+                type: 'warning'
+              });
+          }
+
 	        this.init(); // 初始化
 	    },
 	    methods: {
@@ -260,8 +257,8 @@
                   }
               ];
 
-              // self.cardArrs = _.shuffle(self.cardArrs);
-              // console.log(888, self.cardArrs);
+              // 打乱排序
+              self.cardArrs = _.shuffle(self.cardArrs);
 
               // 重置JS添加的卡牌classname 待优化
               if(this.$refs.cards) {
@@ -285,6 +282,16 @@
               // 记忆时间
               let self = this;
 
+              if (typeof (webExtensionWallet) === "undefined") {
+                  this.$message({
+                    message: '请先安装星云钱包插件哦',
+                    type: 'warning'
+                  });
+
+                  return;
+              }
+
+
               if(!self.nickName) {
                   showToast('请输入你的昵称~');
               } else {
@@ -304,6 +311,8 @@
           startPlaying() {
               // 倒计时 开始游戏
               let self = this;
+
+
               showToast('游戏开始，加油！');
               setTimeout(function() {
                   self.initStatus(2); // 更改状态
@@ -366,17 +375,21 @@
                   }
                   // console.log(receipt)
                   if (receipt["status"] === 2) {
-                      console.log("pending.....")
+                      console.log("pending.....");
                   } else if (receipt["status"] === 1){
+                      console.log("上链成功.....");
+
+                      this.init();
+
                       this.$notify({
                         title: '上链成功',
                         message: '赶快点击排行榜查看排名吧',
                         type: 'success'
-                      })
+                      });
                       //清除定时器
-                      clearInterval(intervalQuery)
+                      clearInterval(intervalQuery);
                   }else {
-                      console.log("交易失败......")
+                      console.log("交易失败......");
                       //清除定时器
                       clearInterval(intervalQuery)
                   }
@@ -386,52 +399,57 @@
           },
           gameover() {
               // 游戏结束
-              console.log('闯关成功, 花费时间', this.time);
+              console.log('闯关成功, 花费时间', (30-this.time));
 
               clearTimeout(this.timer);
+              this.queryTime();
 
-              if(this.blockchainTime < (30-this.time)) {
-                this.init();
 
-                this.$message({
-                  message: '当前闯关时间大于您已上链上的时间，继续努力哦！',
-                  type: 'warning'
-                });
-              } else {
+              // 上链
+              this.$confirm('闯关成功, 花费时间: ' + (30-this.time) + 's', '提示', {
+                    confirmButtonText: '上链',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                  }).then(() => {
+                    console.log('链上已存在时间：', this.blockchainTime);
 
-                this.queryTime();
+                    if(this.blockchainTime && this.blockchainTime < (30-this.time)) {
+                      this.init();
 
-                // 上链
-                this.$confirm('闯关成功, 花费时间: ' + (30-this.time), '提示', {
-                      confirmButtonText: '上链',
-                      cancelButtonText: '取消',
-                      type: 'warning'
-                    }).then(() => {
-                      // 链上保存分数
-                      var nebPay = new NebPay()
+                      this.$message({
+                        message: '当前闯关时间大于或等于您已上链上的时间，继续努力哦！',
+                        type: 'warning'
+                      });
 
-                      var nickname = this.nickName
-                      var time = (30-this.time)
+                    } else {
 
-                      var value = "0"
-                      var callFunction = "save"
-                      var callArgs =JSON.stringify([nickname, time])
-                      console.log(callArgs)
+                      console.log('上链时间', (30-this.time));
 
-                      nebPay.call(
-                        dappAddress,
-                        value,
-                        callFunction,
-                        callArgs, {
-                          listener: this.callbackResult
-                        }
-                      );
+                        // 链上保存分数
+                        var nebPay = new NebPay()
 
-                    }).catch(() => {
+                        var nickname = this.nickName
+                        var time = (30-this.time)
 
-                    });
+                        var value = "0"
+                        var callFunction = "save"
+                        var callArgs =JSON.stringify([nickname, time])
+                        console.log(callArgs)
 
-              }
+                        nebPay.call(
+                          dappAddress,
+                          value,
+                          callFunction,
+                          callArgs, {
+                            listener: this.callbackResult
+                          }
+                        );
+                    }
+
+                  }).catch(() => {
+                      // 取消
+                      this.init();
+                  });
 
           },
           playAgain() {
@@ -529,7 +547,7 @@
                       // 按time进行排序
                       if (this.leaderBoard.length) {
                         this.leaderBoard = _.sortBy(this.leaderBoard, (obj, key) => {
-                          return -obj.time
+                          return obj.time
                         })
                       }
 

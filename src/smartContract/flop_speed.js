@@ -79,7 +79,6 @@ FlopSpeedContract.prototype = {
           this.size ++;
         }
     },
-    /*获取排行榜列表*/
     getLeaderBoard: function() {
       var from = Blockchain.transaction.from;
       var list = [];
