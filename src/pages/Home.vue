@@ -81,7 +81,7 @@
   // const dappAddress = 'n22TrSK9W4sJBJbvMCysNDTtnSon1orwN9u'
 
   // 合约地址 main
-  const dappAddress = 'n1y8WT7P6fbw6GTZW4Rpi7n2V2FE48EUXAi'
+  const dappAddress = 'n21Siz4kw8CMkjuDKLUkWqpFiW8svKJn2dU'
 
 
   // 显示提示框
@@ -342,7 +342,28 @@
               }
           },
           callbackResult (response) {
-            console.log("responseonse of push: " + JSON.stringify(response))
+            var self = this;
+
+            console.log("response of push: " + JSON.stringify(response))
+
+            if (JSON.stringify(response) === '"Error: Transaction rejected by user"') {
+
+              if (this.loading) {
+                this.loading.close();
+              }
+
+              this.init();
+
+              this.$notify({
+                title: '提示',
+                message: '上链已被您拒绝，请重新开始',
+                type: 'error'
+              });
+
+              return;
+            }
+
+
             var intervalQuery = setInterval(() => {
               api.getTransactionReceipt({hash: response["txhash"]}).then((receipt) => {
                   console.log("判断数据提交到区块链的状态", receipt)
@@ -357,6 +378,10 @@
                   } else if (receipt["status"] === 1){
                       console.log("上链成功.....");
 
+                      if (this.loading) {
+                        this.loading.close();
+                      }
+
                       this.init();
 
                       this.$notify({
@@ -368,6 +393,19 @@
                       clearInterval(intervalQuery);
                   }else {
                       console.log("交易失败......");
+
+                      if (this.loading) {
+                        this.loading.close();
+                      }
+
+                      this.init();
+
+                      this.$notify({
+                        title: '上链失败',
+                        message: '请重新再试',
+                        type: 'warning'
+                      });
+
                       //清除定时器
                       clearInterval(intervalQuery)
                   }
@@ -400,6 +438,8 @@
                       });
 
                     } else {
+
+                      this.showLoading();
 
                       console.log('上链时间', (30-this.time));
 
@@ -450,6 +490,17 @@
                 this.countdown(); // 关闭活动规则 继续开始计时器
               }
             });
+
+          },
+          showLoading() {
+            this.loading = this.$loading({
+              lock: true,
+              text: '上链中... 请耐心等待',
+              background: 'rgba(0, 0, 0, 0.8)'
+            });
+            setTimeout(() => {
+              loading.close();
+            }, 300000);
           },
           /*查询链上时间*/
           queryTime () {
